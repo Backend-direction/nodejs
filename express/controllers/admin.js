@@ -13,7 +13,13 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const imageUrl = req.body.imageUrl;
-  const product = new Product(title, price, description, imageUrl, null, req.user._id);
+  const product = new Product({
+    title: title,
+    price: price,
+    description: description,
+    imageUrl: imageUrl,
+    userId: req.user._id,
+  });
 
   product
     .save()
@@ -50,16 +56,24 @@ exports.postEditProduct = (req, res, next) => {
   const updatedImageUrl = req.body.imageUrl;
   const prodId = req.body.productId;
 
-  const product = new Product(updatedTitle, updatedPrice, updatedDesc, updatedImageUrl, prodId);
+  Product.findById(prodId)
+    .then(product => {
+      product.title = updatedTitle;
+      product.price = updatedPrice;
+      product.description = updatedDesc;
+      product.imageUrl = updatedImageUrl;
 
-  product
-  .save()
-  .then(result => res.redirect('/admin/products'))
-  .catch(console.log)
+      return product
+      .save()
+    })
+    .then(result => res.redirect('/admin/products'))
+    .catch(console.log)
 };
 
 exports.getProducts = (req, res, next) => {
-    Product.fetchAll()
+    Product.find()
+    // .select('title price -_id') => exclude title price but without desc and _id
+    // .populate('userId', 'name') => add data but only name and id
     .then(products => {
       res.render('admin/products', {
         prods: products,
@@ -73,7 +87,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   
-  Product.deleteById(prodId)
+  Product.findByIdAndRemove(prodId)
     .then(() => res.redirect('/admin/products'))
     .catch(console.log);
 };
