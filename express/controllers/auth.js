@@ -3,16 +3,15 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const sendgridTransport = require('nodemailer-sendgrid-transport');
-const {
-  validationResult
-} = require('express-validator/check');
+const { validationResult } = require('express-validator/check');
 
 const User = require('../models/user');
 
 const transporter = nodemailer.createTransport(
   sendgridTransport({
     auth: {
-      api_key: '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'
+      api_key:
+        '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'
     }
   })
 );
@@ -74,9 +73,7 @@ exports.postLogin = (req, res, next) => {
     });
   }
 
-  User.findOne({
-      email: email
-    })
+  User.findOne({ email: email })
     .then(user => {
       if (!user) {
         return res.status(422).render('auth/login', {
@@ -150,9 +147,7 @@ exports.postSignup = (req, res, next) => {
       const user = new User({
         email: email,
         password: hashedPassword,
-        cart: {
-          items: []
-        }
+        cart: { items: [] }
       });
       return user.save();
     })
@@ -200,9 +195,7 @@ exports.postReset = (req, res, next) => {
       return res.redirect('/reset');
     }
     const token = buffer.toString('hex');
-    User.findOne({
-        email: req.body.email
-      })
+    User.findOne({ email: req.body.email })
       .then(user => {
         if (!user) {
           req.flash('error', 'No account with that email found.');
@@ -234,12 +227,7 @@ exports.postReset = (req, res, next) => {
 
 exports.getNewPassword = (req, res, next) => {
   const token = req.params.token;
-  User.findOne({
-      resetToken: token,
-      resetTokenExpiration: {
-        $gt: Date.now()
-      }
-    })
+  User.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
     .then(user => {
       let message = req.flash('error');
       if (message.length > 0) {
@@ -269,12 +257,10 @@ exports.postNewPassword = (req, res, next) => {
   let resetUser;
 
   User.findOne({
-      resetToken: passwordToken,
-      resetTokenExpiration: {
-        $gt: Date.now()
-      },
-      _id: userId
-    })
+    resetToken: passwordToken,
+    resetTokenExpiration: { $gt: Date.now() },
+    _id: userId
+  })
     .then(user => {
       resetUser = user;
       return bcrypt.hash(newPassword, 12);
